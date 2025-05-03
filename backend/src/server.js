@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.route.js";
 const app = express();
 const PORT = process.env.PORT || 5001; // Default fallback in case .env is missing
 
+app.use(express.json());
 
 app.use("/api/auth", authRoutes) 
 
