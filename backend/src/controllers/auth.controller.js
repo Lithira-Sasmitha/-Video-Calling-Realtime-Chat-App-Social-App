@@ -27,7 +27,7 @@ export async function signup(req, res){
         const idx=Math.floor(Math.random() * 100) + 1;
         const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`
 
-        const newUser = new User.create({
+        const newUser = await User.create({
             email,
             fullName,
             password,
@@ -42,13 +42,14 @@ export async function signup(req, res){
             maxAge: 7 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             sameSite: "strict",
-            secure: process.env.NODE_ENV === "production"
+            secure: process.env.NODE_ENV === "production"  
         })
 
         res.status(201).json({success: true, user:newUser})
 
     } catch (error){
-
+        console.log("Error in signup controllet", error);
+        res.status(500).json({ message: "Internet Server Error"});
     }
 }
 
