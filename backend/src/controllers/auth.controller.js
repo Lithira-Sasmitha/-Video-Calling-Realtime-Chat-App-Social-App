@@ -103,4 +103,52 @@ export async function login(req, res) {
     res.status(200).json({ success: true, message: "Logout successful" });
   }
 
-
+  export async function onboarding(req, res) {
+    try {
+      const { userId } = req.user; // Assuming you have middleware that extracts user from JWT
+      const {
+        bio,
+        nativeLanguage,
+        learningLanguage,
+        location
+      } = req.body;
+  
+      // Find and update the user
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          bio: bio || "",
+          nativeLanguage: nativeLanguage || "",
+          learningLanguage: learningLanguage || "",
+          location: location || "",
+          isOnboarded: true
+        },
+        { new: true } // Return the updated document
+      ).select("-password"); // Exclude password field from response
+  
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      // Update Stream user if needed
+      try {
+        await upsertStreamUser({
+          id: userId,
+          name: updatedUser.fullName,
+          image: updatedUser.profilePic || "",
+        });
+      } catch (error) {
+        console.log("Error updating Stream user during onboarding:", error);
+        // Continue despite Stream error
+      }
+  
+      res.status(200).json({
+        success: true,
+        message: "Onboarding completed successfully",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.log("Error in onboarding controller:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  }
